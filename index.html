@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de Ads Infinitos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --plum:#2E1A33; --plum2:#4A2D50; --coral:#E8553A; --coral-d:#B8341F; --cream:#FFF3E6; --must:#F4B740; --pink:#F7C6C0;
+    --bg:#FBF7F2; --line:#E7DDD3; --muted:#6B5A6E;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--plum)}
+  header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:20px 28px;background:var(--plum);color:var(--cream)}
+  header h1{margin:0;font-family:'Bricolage Grotesque',Inter,sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.01em}
+  header p{margin:4px 0 0;color:var(--pink);font-size:14px}
+  .wrap{display:flex;flex-wrap:wrap;gap:24px;padding:24px 28px;align-items:flex-start}
+  aside{flex:1 1 300px;max-width:380px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+  aside h2{margin:0;font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+  input,textarea{font:inherit;font-weight:400;font-size:14px;padding:10px 12px;border:1px solid #CDBFB3;border-radius:10px;background:#fff;color:var(--plum)}
+  input:focus,textarea:focus{outline:2px solid var(--coral);outline-offset:1px}
+  textarea{resize:vertical;min-height:60px}
+  .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .hint{font-size:12px;color:var(--muted);font-weight:400}
+  main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:18px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  button{font:inherit;cursor:pointer;border-radius:999px;border:0;min-height:44px;padding:10px 18px;font-weight:600;font-size:14px}
+  .primary{background:var(--coral);color:#fff}
+  .primary:hover{background:var(--coral-d)}
+  .dark{background:var(--plum);color:var(--cream)}
+  .dark:hover{background:var(--plum2)}
+  .ghost{background:#fff;color:var(--plum);border:1px solid #CDBFB3}
+  .ghost:hover{border-color:var(--plum)}
+  .chip{background:#fff;color:var(--plum);border:1px solid #CDBFB3}
+  .chip[aria-pressed="true"]{background:var(--plum);color:var(--cream);border-color:var(--plum)}
+  .actions{display:flex;flex-wrap:wrap;gap:8px}
+  .tanda{font-size:13px;color:var(--muted)}
+  .note{background:#FFF0D6;border:1px solid #F0D29A;border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.45}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;align-items:start}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .card canvas{width:100%;height:auto;display:block;aspect-ratio:1/1;background:#eee}
+  .meta{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.45}
+  .meta .id{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}
+  .pill{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+  .p-precio{background:#FDE7B8;color:#6A4300}
+  .p-calidad{background:#F9D8D3;color:#8A2716}
+  .p-urgencia{background:#E9DCEB;color:var(--plum)}
+  .meta dt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .meta dd{margin:0 0 4px}
+  .meta dl{margin:0}
+  .card .actions button{min-height:40px;padding:8px 14px;font-size:13px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--plum);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .file{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .file img{width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+  .fmt{flex-direction:row;align-items:center;gap:8px}
+  select{font:inherit;font-size:14px;padding:9px 12px;border:1px solid #CDBFB3;border-radius:10px;background:#fff;color:var(--plum);min-height:44px}
+  details.edit{border-top:1px solid var(--line);padding-top:8px}
+  details.edit summary{cursor:pointer;font-weight:700;color:var(--coral-d);min-height:32px;display:flex;align-items:center}
+  .editbox{display:flex;flex-direction:column;gap:10px;padding-top:8px}
+  .editbox textarea{min-height:52px}
+  .lab{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+  .sws{display:flex;gap:8px}
+  .sw{width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;border:2px solid transparent}
+  .sw[aria-pressed="true"]{border-color:var(--plum);outline:2px solid var(--plum);outline-offset:2px}
+  .edited{color:var(--coral-d);font-weight:600}
+  .card canvas{aspect-ratio:auto}
+  .status{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;display:flex;align-items:center;gap:12px}
+  .status.err{background:#FDECEA;border-color:#F3B8AE}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--coral);animation:pulse 1s infinite alternate;flex:none}
+  @keyframes pulse{from{opacity:.3}to{opacity:1}}
+  .empty{background:#fff;border:1px dashed #CDBFB3;border-radius:16px;padding:32px;text-align:center}
+  .empty h2{margin:0 0 8px;font-family:'Bricolage Grotesque',Inter,sans-serif;font-size:24px}
+  .empty p{margin:0 auto;max-width:560px;color:var(--muted);line-height:1.5}
+  .tanda-h{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:8px 0 -4px;font-family:'Bricolage Grotesque',Inter,sans-serif;font-size:22px;font-weight:800}
+  .src{font-family:Inter,sans-serif;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:#E3F1E7;color:#1F5D34}
+  .src.tpl{background:#EEE;color:#555}
+  button:disabled{opacity:.6;cursor:wait}
+  .imgbox{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+  .prompt{margin:0;font-size:12px;line-height:1.4;color:var(--muted);background:#F7F2EC;border-radius:8px;padding:8px 10px;max-height:72px;overflow:auto}
+  .upl{display:inline-flex;align-items:center;cursor:pointer;border-radius:999px;min-height:40px;padding:8px 14px;font-size:13px;font-weight:600;flex-direction:row;background:#fff;border:1px solid #CDBFB3}
+  .upl:focus-within{outline:2px solid var(--coral)}
+  details.adv{font-size:13px} details.adv summary{cursor:pointer;font-weight:700;color:var(--muted)}
+  footer{padding:8px 28px 28px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Generador de Ads Infinitos</h1>
+    <p>La IA escribe, diseña y genera las fotos de anuncios para Meta Ads, sin límite · precio, calidad y urgencia</p>
+  </div>
+  <div class="actions">
+    <button class="primary" id="btnGen" type="button">Generar 10 anuncios con IA</button>
+    <button class="ghost" id="btnStop" type="button" hidden style="background:transparent;color:var(--cream);border-color:var(--pink)">Detener</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside>
+    <h2>Datos del producto</h2>
+    <form id="f" autocomplete="off">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <label>Cuenta de la tienda<input name="tienda" value="@tutienda.uy"></label>
+        <div class="row2">
+          <label>Marca<input name="marca" value="Salon Line"></label>
+          <label>Tamaño<input name="tam" value="1 kg"></label>
+        </div>
+        <label>Producto<input name="producto" value="Crema para peinar Definición Intensa"></label>
+        <div class="row2">
+          <label>Precio de lista ($)<input name="lista" inputmode="numeric" value="790"></label>
+          <label>Precio oferta ($)<input name="oferta" inputmode="numeric" value="590"></label>
+        </div>
+        <div class="row2">
+          <label>Precio combo x2 ($)<input name="combo" inputmode="numeric" value="1090"></label>
+          <label>Usos por envase<input name="usos" inputmode="numeric" value="25"></label>
+        </div>
+        <label>Público<input name="publico" value="Mujeres de 18 a 45 años con rulos u ondas, en Uruguay"></label>
+        <label>Beneficios (separados por coma)<input name="beneficios" value="Define cada rulo, Hidrata sin apelmazar, Controla el frizz"></label>
+        <label>Tono<select name="tono"><option>Cercano</option><option>Divertido</option><option>Elegante</option></select></label>
+        <h2 style="margin-top:6px">Promo vigente</h2>
+        <div class="row2">
+          <label>Termina <span class="hint">vacío = sin promo</span><input name="fin" value="el domingo 23:59"></label>
+          <label>Cupo de pedidos<input name="cupo" inputmode="numeric" value="50"></label>
+        </div>
+        <label>Foto del producto <span class="hint">Opcional. Si no subís una, se dibuja un pote genérico.</span>
+          <span class="file"><input type="file" name="foto" accept="image/*"><img id="thumb" alt="" hidden></span>
+        </label>
+        <label>Logo de la tienda <span class="hint">Opcional. Va arriba a la derecha de cada pieza.</span>
+          <span class="file"><input type="file" name="logo" accept="image/*"><img id="thumbLogo" alt="" hidden></span>
+        </label>
+      </div>
+    </form>
+    <p class="note">Las piezas de urgencia publicalas solo si la promo existe de verdad. Lo que falte aparece entre [corchetes] para completarlo. Tus cambios quedan guardados en este navegador.</p>
+    <details class="adv"><summary>Ajustes avanzados</summary>
+      <label style="margin-top:10px">Clave de Pollinations (opcional)<input id="pkey" placeholder="pk_… o sk_…" autocomplete="off"></label>
+      <p class="hint" style="margin:6px 0 0">Sin clave funciona gratis, con un límite de velocidad. Con una clave gratis de enter.pollinations.ai va más rápido y las fotos salen sin marca de agua.</p>
+    </details>
+  </aside>
+
+  <main>
+    <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+    <div class="bar">
+      <div class="chips" role="group" aria-label="Filtrar por enfoque">
+        <button class="chip" type="button" data-f="todos" aria-pressed="true">Todos</button>
+        <button class="chip" type="button" data-f="precio" aria-pressed="false">Precio</button>
+        <button class="chip" type="button" data-f="calidad" aria-pressed="false">Calidad</button>
+        <button class="chip" type="button" data-f="urgencia" aria-pressed="false">Urgencia</button>
+      </div>
+      <div class="actions" style="align-items:center"><label class="fmt">Formato<select id="formato"><option value="1:1">Cuadrada 1:1</option><option value="4:5">Feed 4:5</option><option value="9:16">Historia 9:16</option></select></label><span class="tanda" id="contador">0 anuncios</span><button class="ghost" id="btnCsv2" type="button">Exportar CSV</button><button class="ghost" id="btnReset" type="button">Empezar de cero</button></div>
+    </div>
+    <div id="empty" class="empty">
+      <h2>Cargá el brief y tocá "Generar 10 anuncios con IA"</h2>
+      <p>Cada clic le pide a la IA 10 anuncios nuevos, distintos a todos los anteriores (3 de precio, 4 de calidad y 3 de urgencia), cada uno con su foto generada por IA, sus colores y su texto para Meta. Si un anuncio no te gusta, le pedís otro texto u otra foto. Las tandas se acumulan, sin límite.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+<footer>Obligatorio ITCD 2026 · Universidad ORT Uruguay · Artefacto 8: El Generador de "Ads" Infinitos. IA de texto e imágenes: <a href="https://pollinations.ai">Pollinations.ai</a> (gratis).</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const PAL = [
+    {bg:'#FFF3E6', ink:'#2E1A33', sub:'#4A3550', acc:'#B8341F', tagBg:'#F4B740', tagInk:'#2E1A33', ctaBg:'#2E1A33', ctaInk:'#FFF3E6', deco:'#F7C6C0', jar:'#E8553A', lid:'#2E1A33', box:'#FFFFFF'},
+    {bg:'#2E1A33', ink:'#FFF3E6', sub:'#F7C6C0', acc:'#F4B740', tagBg:'#F4B740', tagInk:'#2E1A33', ctaBg:'#F4B740', ctaInk:'#2E1A33', deco:'#4A2D50', jar:'#F4B740', lid:'#E8553A', box:'#4A2D50'},
+    {bg:'#E8553A', ink:'#2E1A33', sub:'#2E1A33', acc:'#FFF3E6', tagBg:'#2E1A33', tagInk:'#FFF3E6', ctaBg:'#2E1A33', ctaInk:'#FFF3E6', deco:'#F07A62', jar:'#F4B740', lid:'#2E1A33', box:'#FFF3E6'},
+    {bg:'#F4B740', ink:'#2E1A33', sub:'#2E1A33', acc:'#8E2614', tagBg:'#2E1A33', tagInk:'#FFF3E6', ctaBg:'#2E1A33', ctaInk:'#FFF3E6', deco:'#EBA42C', jar:'#E8553A', lid:'#2E1A33', box:'#FFF3E6'}
+  ];
+
+
+  const $ = s => document.querySelector(s);
+  const form = $('#f'), grid = $('#grid');
+  let photo = null, logo = null, ads = [], formato = '1:1', filtro = 'todos', tandas = 0, busy = null;
+  const FORMATOS = {'1:1':1080, '4:5':1350, '9:16':1920};
+  const DECOS = ['espiral','circulos','ondas','destellos'];
+  const num = v => { const n = Number(String(v).replace(/[^\d.,]/g,'').replace(/\./g,'').replace(',','.')); return isFinite(n) && n > 0 ? n : null; };
+  const money = n => n == null ? '[precio]' : '$\u00A0' + Math.round(n).toLocaleString('es-UY');
+  const or = (v, ph) => (v && String(v).trim()) ? String(v).trim() : ph;
+
+  function data(){
+    const fd = new FormData(form);
+    const g = k => fd.get(k) || '';
+    const L = num(g('lista')), O = num(g('oferta')), C = num(g('combo')), U = num(g('usos'));
+    const pct = (L && O && O < L) ? Math.round((1 - O / L) * 100) : null;
+    return {
+      tienda: or(g('tienda'), '@[tutienda]'), marca: or(g('marca'), '[marca]'), producto: or(g('producto'), '[producto]'), tam: or(g('tam'), ''),
+      L: money(L), O: money(O), combo: money(C), usos: U ? Math.round(U) : '[usos]',
+      pct: pct == null ? '[%]' : pct, ahorro: (L && O && O < L) ? money(L - O) : '[ahorro]',
+      cpu: (O && U) ? money(Math.ceil(O / U)) : '[$ por uso]',
+      beneficios: or(g('beneficios'), '[beneficio 1], [beneficio 2], [beneficio 3]').split(',').map(s => s.trim()).filter(Boolean).slice(0,3),
+      fin: or(g('fin'), '[cuándo termina]'), cupo: or(g('cupo'), '[N]')
+    };
+  }
+
+  const SLOTS = [
+    {id:'A1', enfoque:'precio', nombre:'Precio directo', kind:'price', v:[
+      d => ({tag:'Precio · -'+d.pct+'%', h:'Rulos definidos por '+d.O, s:d.producto+' '+d.tam+'.', cta:'Comprar ahora',
+             primary:'¿Rulos definidos sin gastar de más? '+d.marca+' '+d.producto+' '+d.tam+' a '+d.O+' (antes '+d.L+').', title:'Rulos definidos por '+d.O, button:'Comprar'}),
+      d => ({tag:'Precio · oferta', h:d.pct+'% OFF en tu crema de rulos', s:'De '+d.L+' a '+d.O+'. '+d.marca+' original.', cta:'Lo quiero',
+             primary:d.pct+'% OFF en '+d.marca+' '+d.producto+'. Pasá de '+d.L+' a '+d.O+'.', title:d.pct+'% OFF en '+d.marca, button:'Comprar'}),
+      d => ({tag:'Precio · ahorro', h:'Ahorrate '+d.ahorro+' en tus rulos', s:d.producto+' '+d.tam+' a '+d.O+'.', cta:'Comprar ahora',
+             primary:'Misma crema, '+d.ahorro+' menos. '+d.marca+' '+d.producto+' '+d.tam+' a '+d.O+'.', title:'Ahorrate '+d.ahorro, button:'Comprar'})
+    ], hip:'Un descuento claro alcanza para decidir la compra.'},
+    {id:'A2', enfoque:'precio', nombre:'Precio por uso', kind:'none', v:[
+      d => ({tag:'Precio · rendimiento', h:'Menos de '+d.cpu+' por lavado', s:'Un envase de '+d.tam+' rinde unas '+d.usos+' aplicaciones.', cta:'Ver precio',
+             primary:'Un pote de '+d.tam+' rinde unas '+d.usos+' aplicaciones: menos de '+d.cpu+' por lavado. Hacé la cuenta.', title:'Menos de '+d.cpu+' por lavado', button:'Más información'}),
+      d => ({tag:'Precio · rendimiento', h:d.usos+' lavados en un solo pote', s:'Sale '+d.cpu+' por uso. Hacé la cuenta.', cta:'Ver precio',
+             primary:d.marca+' '+d.producto+' '+d.tam+': unas '+d.usos+' aplicaciones por pote, '+d.cpu+' cada una.', title:d.usos+' lavados en un pote', button:'Más información'})
+    ], hip:'El rendimiento convence más que el precio total.'},
+    {id:'A3', enfoque:'precio', nombre:'Combo x2', kind:'none', v:[
+      d => ({tag:'Precio · combo', h:'Llevá 2, pagá menos', s:'2 potes por '+d.combo+'.', cta:'Quiero el combo',
+             primary:'Para no quedarte sin: 2 potes de '+d.marca+' '+d.producto+' por '+d.combo+'.', title:'Llevá 2 por '+d.combo, button:'Comprar'}),
+      d => ({tag:'Precio · combo', h:'Uno para vos, otro para tu hermana', s:'2 potes por '+d.combo+'.', cta:'Quiero el combo',
+             primary:'Compartí los rulos: 2 potes de '+d.marca+' '+d.producto+' por '+d.combo+'.', title:'2 potes por '+d.combo, button:'Comprar'})
+    ], hip:'Un combo sube el ticket promedio.'},
+    {id:'B1', enfoque:'calidad', nombre:'Resultado', kind:'none', v:[
+      d => ({tag:'Calidad · resultado', h:'Mismo pelo. Otra definición.', s:d.marca+' '+d.producto+'.', cta:'Comprar',
+             primary:'Mismo pelo, otra definición. '+d.marca+' '+d.producto+' '+d.tam+'.', title:'Mismo pelo. Otra definición.', button:'Comprar'}),
+      d => ({tag:'Calidad · resultado', h:'Rulos definidos desde la primera lavada', s:d.marca+' '+d.producto+'.', cta:'Comprar',
+             primary:'Rulos definidos desde la primera lavada. '+d.marca+' '+d.producto+' '+d.tam+'.', title:'Rulos definidos desde el día 1', button:'Comprar'})
+    ], hip:'Mostrar el resultado vende más que explicar el producto.'},
+    {id:'B2', enfoque:'calidad', nombre:'Beneficios', kind:'checks', v:[
+      d => ({tag:'Calidad · beneficios', h:'Lo que tus rulos te venían pidiendo', s:'', cta:'Probala',
+             primary:d.beneficios.join(', ')+'. '+d.marca+' '+d.producto+'.', title:'Probala en tus rulos', button:'Comprar'}),
+      d => ({tag:'Calidad · beneficios', h:'Tu rutina de rulos en un paso', s:'', cta:'Probala',
+             primary:'Un solo producto: '+d.beneficios.join(', ').toLowerCase()+'.', title:'Tu rutina en un paso', button:'Comprar'})
+    ], hip:'Explicar el producto ayuda a quien no lo conoce.'},
+    {id:'B3', enfoque:'calidad', nombre:'Estilo de vida', kind:'none', v:[
+      d => ({tag:'Calidad · estilo', h:'Rulos con onda todo el día', s:'De la mañana a la noche, sin frizz.', cta:'Lo quiero',
+             primary:'Rulos con onda de la mañana a la noche. '+d.marca+' '+d.producto+'.', title:'Rulos con onda todo el día', button:'Comprar'}),
+      d => ({tag:'Calidad · estilo', h:'Tus rulos, tu mejor accesorio', s:d.marca+' '+d.producto+' '+d.tam+'.', cta:'Lo quiero',
+             primary:'Tus rulos son tu mejor accesorio. Cuidalos con '+d.marca+'.', title:'Tus rulos, tu mejor accesorio', button:'Comprar'})
+    ], hip:'Asociar el producto a un estilo de vida genera deseo.'},
+    {id:'B4', enfoque:'calidad', nombre:'Producto original', kind:'none', v:[
+      d => ({tag:'Calidad · confianza', h:'Original de Brasil. Sin vueltas.', s:d.marca+' original. Te asesoramos por WhatsApp.', cta:'Escribinos',
+             primary:d.marca+' original. ¿Dudas sobre cuál es para tu tipo de rulo? Escribinos y te asesoramos.', title:'Original de Brasil. Sin vueltas.', button:'Enviar mensaje de WhatsApp'}),
+      d => ({tag:'Calidad · asesoramiento', h:'¿No sabés cuál es para tu rulo?', s:'Escribinos y te recomendamos. '+d.marca+' original.', cta:'Escribinos',
+             primary:'Cada rulo es distinto. Contanos el tuyo por WhatsApp y te decimos qué '+d.marca+' te conviene.', title:'Te asesoramos gratis', button:'Enviar mensaje de WhatsApp'})
+    ], hip:'La confianza y el asesoramiento generan consultas.'},
+    {id:'C1', enfoque:'urgencia', nombre:'Fecha límite', kind:'deadline', v:[
+      d => ({tag:'Urgencia · tiempo', h:'Últimas horas al -'+d.pct+'%', s:'Termina '+d.fin+'. Después vuelve a '+d.L+'.', cta:'Aprovechar ahora',
+             primary:'Últimas horas con '+d.pct+'% OFF en '+d.marca+' '+d.producto+'. Termina '+d.fin+'.', title:'Últimas horas al -'+d.pct+'%', button:'Comprar'}),
+      d => ({tag:'Urgencia · tiempo', h:'Se termina '+d.fin, s:d.pct+'% OFF hasta entonces: '+d.O+'.', cta:'Aprovechar ahora',
+             primary:'La promo de '+d.marca+' a '+d.O+' se termina '+d.fin+'. No lo dejes para después.', title:'Se termina '+d.fin, button:'Comprar'})
+    ], hip:'Un límite de tiempo acelera la compra.'},
+    {id:'C2', enfoque:'urgencia', nombre:'Stock limitado', kind:'stock', v:[
+      d => ({tag:'Urgencia · stock', h:'Quedan pocos potes de esta tanda', s:'', cta:'Reservar el mío',
+             primary:'Quedan pocos potes de '+d.marca+' '+d.producto+'. Reservá el tuyo antes de que se agote.', title:'Quedan pocos potes', button:'Pedir ahora'}),
+      d => ({tag:'Urgencia · stock', h:'Se nos está por agotar', s:'', cta:'Reservar el mío',
+             primary:'La '+d.producto+' de '+d.marca+' se está por agotar. Asegurá la tuya.', title:'Se está por agotar', button:'Pedir ahora'})
+    ], hip:'La escasez funciona mejor que el reloj.'},
+    {id:'C3', enfoque:'urgencia', nombre:'Cupo limitado', kind:'none', v:[
+      d => ({tag:'Urgencia · cupo', h:'Solo para los primeros '+d.cupo+' pedidos', s:d.producto+' '+d.tam+' a '+d.O+'. Después vuelve a precio normal.', cta:'Entrar en el cupo',
+             primary:'Solo los primeros '+d.cupo+' pedidos se llevan '+d.marca+' '+d.producto+' a '+d.O+'.', title:'Solo los primeros '+d.cupo, button:'Comprar'}),
+      d => ({tag:'Urgencia · cupo', h:d.cupo+' potes a '+d.O+'. Ni uno más.', s:'Cuando se llena el cupo, vuelve a '+d.L+'.', cta:'Entrar en el cupo',
+             primary:d.cupo+' potes de '+d.marca+' a '+d.O+'. Cuando se llena el cupo, vuelve a '+d.L+'.', title:d.cupo+' potes a '+d.O, button:'Comprar'})
+    ], hip:'Un cupo concreto genera más urgencia.'}
+  ];
+
+
+  // ---------- Colores ----------
+  const HEX = /^#[0-9a-f]{6}$/i;
+  function lum(h){ const c = [1,3,5].map(i => parseInt(h.substr(i,2),16)/255).map(v => v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4)); return .2126*c[0] + .7152*c[1] + .0722*c[2]; }
+  function contrast(a, b){ const x = lum(a), y = lum(b); return (Math.max(x,y) + .05) / (Math.min(x,y) + .05); }
+  function mix(a, b, t){ return '#' + [1,3,5].map(i => Math.round(parseInt(a.substr(i,2),16)*(1-t) + parseInt(b.substr(i,2),16)*t).toString(16).padStart(2,'0')).join(''); }
+  const onColor = c => contrast(c, '#2E1A33') >= contrast(c, '#FFF3E6') ? '#2E1A33' : '#FFF3E6';
+  function aiPalette(c){
+    if (!c || !HEX.test(c.fondo || '') || !HEX.test(c.texto || '') || !HEX.test(c.acento || '')) return null;
+    let bg = c.fondo, ink = c.texto, acc = c.acento;
+    if (contrast(bg, ink) < 4.5) ink = onColor(bg);
+    const accText = contrast(bg, acc) >= 3 ? acc : ink;
+    return {bg, ink, sub:ink, acc:accText, tagBg:acc, tagInk:onColor(acc), ctaBg:ink, ctaInk:bg, deco:mix(bg, acc, .35), jar:acc, lid:ink, box:mix(bg, '#FFFFFF', .65)};
+  }
+  const palOf = a => a.palIdx != null ? PAL[a.palIdx] : (aiPalette(a.colores) || PAL[0]);
+
+  // ---------- Decoraciones ----------
+  function deco(ctx, kind, p){
+    ctx.save(); ctx.strokeStyle = p.deco; ctx.fillStyle = p.deco; ctx.lineWidth = 12; ctx.lineCap = 'round';
+    if (kind === 'circulos'){ [40,80,120].forEach(r => { ctx.beginPath(); ctx.arc(940, 140, r, 0, Math.PI*2); ctx.stroke(); }); }
+    else if (kind === 'ondas'){ for (let k = 0; k < 4; k++){ ctx.beginPath(); for (let x = 760; x <= 1080; x += 8){ const y = 70 + k*42 + Math.sin(x/28)*14; x === 760 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); } ctx.stroke(); } }
+    else if (kind === 'destellos'){ [[930,120,46],[1010,230,26],[840,220,20]].forEach(([x,y,r]) => { ctx.beginPath(); ctx.moveTo(x, y-r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.quadraticCurveTo(x, y, x, y+r); ctx.quadraticCurveTo(x, y, x-r, y); ctx.quadraticCurveTo(x, y, x, y-r); ctx.fill(); }); }
+    else spiral(ctx, 930, 150, p.deco, 9, 1);
+    ctx.restore();
+  }
+  // ---------- Canvas ----------
+  const DISP = "'Bricolage Grotesque', Inter, sans-serif", BODY = "Inter, system-ui, sans-serif";
+  function rr(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function wrap(ctx, text, maxW){
+    const words = String(text).split(/[ \n\t]+/), lines = []; let line = '';
+    for (const w of words){ const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line); return lines;
+  }
+  function spiral(ctx, cx, cy, color, scale, alpha){
+    ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath();
+    for (let t = 0; t < Math.PI * 7; t += 0.05){ const r = scale * t; const x = cx + r * Math.cos(t), y = cy + r * Math.sin(t); t === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); }
+    ctx.stroke(); ctx.restore();
+  }
+  function jar(ctx, x, y, s, p, d){
+    const w = 300*s, lh = 64*s, bh = 330*s;
+    ctx.fillStyle = p.lid; rr(ctx, x + 15*s, y, 270*s, lh, 16*s); ctx.fill();
+    ctx.fillStyle = p.jar; rr(ctx, x, y + lh - 4*s, w, bh, 40*s); ctx.fill();
+    const lw = 236*s, lhh = 200*s, lx = x + (w - lw)/2, ly = y + lh + (bh - lhh)/2 - 6*s;
+    ctx.fillStyle = '#FFF3E6'; rr(ctx, lx, ly, lw, lhh, 18*s); ctx.fill();
+    ctx.textAlign = 'center'; const cx = x + w/2;
+    ctx.fillStyle = '#2E1A33'; ctx.font = `600 ${16*s}px ${BODY}`; ctx.fillText(d.marca.toUpperCase(), cx, ly + 40*s);
+    let fs = 26*s, pl;
+    do { ctx.font = `800 ${fs}px ${DISP}`; pl = wrap(ctx, d.producto, lw - 28*s); if (pl.length <= 3) break; fs -= 2*s; } while (fs > 14*s);
+    pl = pl.slice(0,4);
+    pl.forEach((l, i) => ctx.fillText(l, cx, ly + 76*s + i*fs*1.08));
+    ctx.fillStyle = '#B8341F'; ctx.font = `700 ${18*s}px ${BODY}`; ctx.fillText(d.tam, cx, ly + lhh - 18*s);
+    ctx.textAlign = 'left';
+  }
+  function product(ctx, p, d, H){
+    if (photo){
+      const x = 620, y = H - 680, w = 400, h = 500;
+      ctx.save(); rr(ctx, x, y, w, h, 36); ctx.clip();
+      const ir = photo.width / photo.height, br = w / h;
+      let sw, sh, sx, sy; if (ir > br){ sh = photo.height; sw = sh * br; sx = (photo.width - sw)/2; sy = 0; } else { sw = photo.width; sh = sw / br; sx = 0; sy = (photo.height - sh)/2; }
+      ctx.drawImage(photo, sx, sy, sw, sh, x, y, w, h); ctx.restore();
+    } else jar(ctx, 680, H - 640, 1.1, p, d);
+  }
+  function draw(canvas, ad){
+    const ctx = canvas.getContext('2d'), p = ad.pal, d = ad.d, X = 72;
+    const H = canvas.height, off = Math.round((H - 1080) / 3);
+    ctx.clearRect(0,0,1080,H); ctx.fillStyle = p.bg; ctx.fillRect(0,0,1080,H);
+    const mimg = ad.imgEl || null;
+    if (!mimg && (ad.imgState === 'cola' || ad.imgState === 'cargando' || ad.imgState === 'error')){
+      ctx.fillStyle = p.box; ctx.fillRect(580, 0, 500, H);
+      ctx.fillStyle = p.bg === p.box ? '#6B5A6E' : (contrast(p.box, '#2E1A33') > 4.5 ? '#2E1A33' : '#FFF3E6');
+      ctx.font = `600 30px ${BODY}`; ctx.textAlign = 'center';
+      const msg = ad.imgState === 'error' ? ['No se pudo generar', 'la foto'] : ad.imgState === 'cola' ? ['Foto en cola…', ''] : ['Generando foto', 'con IA…'];
+      ctx.fillText(msg[0], 830, 300 + (H - 1080) / 3); ctx.fillText(msg[1], 830, 342 + (H - 1080) / 3); ctx.textAlign = 'left';
+    }
+    if (mimg){
+      const x0 = 580, w = 1080 - x0, ir = mimg.width / mimg.height, br = w / H;
+      let sw, sh, sx, sy; if (ir > br){ sh = mimg.height; sw = sh * br; sx = (mimg.width - sw) / 2; sy = 0; } else { sw = mimg.width; sh = sw / br; sx = 0; sy = (mimg.height - sh) / 2; }
+      ctx.drawImage(mimg, sx, sy, sw, sh, x0, 0, w, H);
+      const g = ctx.createLinearGradient(x0 - 2, 0, x0 + 140, 0); g.addColorStop(0, p.bg); g.addColorStop(1, p.bg + '00');
+      ctx.fillStyle = g; ctx.fillRect(x0 - 2, 0, 144, H);
+    }
+    if (logo){ const lw = 200, lh = Math.min(200, lw * logo.height / logo.width); ctx.drawImage(logo, 1080 - 72 - lw, 64, lw, lh); } else if (!mimg && !ad.imgState) deco(ctx, ad.deco || 'espiral', p);
+    // etiqueta
+    ctx.font = `700 22px ${BODY}`; const tag = ad.tag.toUpperCase(); const tw = ctx.measureText(tag).width + 44;
+    ctx.fillStyle = p.tagBg; rr(ctx, X, 72 + off, tw, 48, 24); ctx.fill(); ctx.fillStyle = p.tagInk; ctx.fillText(tag, X + 22, 104 + off);
+    // titular con auto-ajuste
+    const colW = ad.kind === 'quote' ? 900 : 540;
+    let size = ad.kind === 'quote' ? 58 : 92, lines;
+    do { ctx.font = `800 ${size}px ${DISP}`; lines = wrap(ctx, ad.h, colW); if (lines.length <= (ad.kind === 'quote' ? 5 : 4)) break; size -= 6; } while (size > 40);
+    let y = 160 + off;
+    if (ad.kind === 'quote'){ ctx.fillStyle = p.acc; ctx.font = `800 200px ${DISP}`; ctx.fillText('“', X - 6, 300 + off); y = 250 + off; ctx.font = `600 ${size}px ${DISP}`; lines = wrap(ctx, ad.h.replace(/^“|”$/g,''), colW); }
+    ctx.fillStyle = p.ink;
+    lines.forEach(l => { y += size * 1.0; ctx.fillText(l, X, y); });
+    y += 26;
+    if (ad.s){ ctx.font = `500 32px ${BODY}`; ctx.fillStyle = p.sub; wrap(ctx, ad.s, colW).slice(0,3).forEach(l => { y += 42; ctx.fillText(l, X, y); }); y += 20; }
+    // extras por tipo
+    if (ad.kind === 'price'){
+      ctx.font = `600 38px ${BODY}`; ctx.fillStyle = p.sub; const lt = 'Antes ' + d.L; ctx.fillText(lt, X, y + 44);
+      const lw = ctx.measureText(lt).width; ctx.fillRect(X + 108, y + 31, lw - 108, 4);
+      ctx.font = `800 64px ${DISP}`; ctx.fillStyle = p.acc; ctx.fillText(d.O, X, y + 118);
+    }
+    if (ad.kind === 'checks'){
+      d.beneficios.forEach((b, i) => { const cy = y + 30 + i * 66; ctx.strokeStyle = p.acc; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(X + 22, cy, 22, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(X + 11, cy + 1); ctx.lineTo(X + 19, cy + 9); ctx.lineTo(X + 34, cy - 8); ctx.stroke();
+        ctx.fillStyle = p.ink; ctx.font = `600 34px ${BODY}`; ctx.fillText(b, X + 64, cy + 12); });
+    }
+    if (ad.kind === 'beforeafter'){
+      [['ANTES', X], ['DESPUÉS', X + 270]].forEach(([t, bx], i) => { ctx.setLineDash([14,10]); ctx.lineWidth = 4; ctx.strokeStyle = p.sub; ctx.fillStyle = p.box;
+        rr(ctx, bx, y + 10, 250, 330, 24); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = i ? p.acc === '#FFF3E6' ? '#2E1A33' : p.acc : p.sub; ctx.font = `800 40px ${DISP}`; ctx.textAlign = 'center'; ctx.fillText(t, bx + 125, y + 170);
+        ctx.font = `500 20px ${BODY}`; ctx.fillStyle = '#6B5A6E'; ctx.fillText('foto real de clienta', bx + 125, y + 206); ctx.textAlign = 'left'; });
+    }
+    if (ad.kind === 'deadline'){
+      ctx.font = `700 30px ${BODY}`; const dw = Math.min(560, ctx.measureText('Hasta ' + d.fin).width + 130);
+      ctx.fillStyle = p.box; rr(ctx, X, y + 4, dw, 96, 24); ctx.fill();
+      ctx.strokeStyle = p.acc === '#FFF3E6' ? '#2E1A33' : p.acc; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(X + 52, y + 52, 26, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X + 52, y + 36); ctx.lineTo(X + 52, y + 54); ctx.lineTo(X + 64, y + 62); ctx.stroke();
+      ctx.fillStyle = '#2E1A33'; ctx.font = `700 30px ${BODY}`; ctx.fillText('Hasta ' + d.fin, X + 98, y + 63);
+    }
+    if (ad.kind === 'stock'){
+      ctx.fillStyle = p.box; rr(ctx, X, y + 10, 480, 34, 17); ctx.fill();
+      ctx.fillStyle = p.acc === '#FFF3E6' ? '#2E1A33' : (p.bg === '#2E1A33' ? '#E8553A' : p.acc); rr(ctx, X, y + 10, 480 * 0.82, 34, 17); ctx.fill();
+      ctx.fillStyle = p.sub; ctx.font = `600 26px ${BODY}`; ctx.fillText('Stock de esta tanda casi agotado', X, y + 86);
+    }
+    if (mimg){ if (photo){ const x=820,y0=H-400,w=190,h=190; ctx.save(); rr(ctx,x,y0,w,h,28); ctx.clip(); const s2=Math.min(photo.width,photo.height); ctx.drawImage(photo,(photo.width-s2)/2,(photo.height-s2)/2,s2,s2,x,y0,w,h); ctx.restore(); } else jar(ctx, 830, H - 420, 0.62, p, d); }
+    else if (ad.kind !== 'quote' && ad.kind !== 'beforeafter') product(ctx, p, d, H);
+    if (ad.kind === 'quote' || ad.kind === 'beforeafter'){ ctx.save(); ctx.translate(0,0); if (photo){ const x=800,y0=H-320,w=200,h=200; ctx.save(); rr(ctx,x,y0,w,h,28); ctx.clip(); const s=Math.min(photo.width,photo.height); ctx.drawImage(photo,(photo.width-s)/2,(photo.height-s)/2,s,s,x,y0,w,h); ctx.restore(); } else jar(ctx, 820, H - 380, 0.62, p, d); ctx.restore(); }
+    // botón
+    ctx.font = `700 30px ${BODY}`; const cw = ctx.measureText(ad.cta).width + 110;
+    ctx.fillStyle = p.ctaBg; const cy = H - 180; rr(ctx, X, cy, cw, 80, 40); ctx.fill(); ctx.fillStyle = p.ctaInk; ctx.fillText(ad.cta, X + 38, cy + 51);
+    ctx.strokeStyle = p.ctaInk; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); const ax = X + cw - 58; ctx.moveTo(ax, cy + 40); ctx.lineTo(ax + 24, cy + 40); ctx.moveTo(ax + 14, cy + 29); ctx.lineTo(ax + 25, cy + 40); ctx.lineTo(ax + 14, cy + 51); ctx.stroke();
+    // cuenta
+    ctx.font = `600 24px ${BODY}`; ctx.fillStyle = p.sub; ctx.textAlign = 'right'; ctx.fillText(d.tienda, mimg ? 540 : 1008, H - 40); ctx.textAlign = 'left';
+  }
+
+
+  // ---------- IA (Pollinations.ai, gratis) ----------
+  const ENF = {precio:'precio', calidad:'calidad', urgencia:'urgencia'};
+  const EXTRA_MAP = {precio:'price', checks:'checks', reloj:'deadline', stock:'stock', ninguno:'none'};
+  const BOTONES = ['Comprar','Más información','Pedir ahora','Enviar mensaje de WhatsApp'];
+  const key = () => { try { return ($('#pkey').value || '').trim(); } catch { return ''; } };
+  function brief(){
+    const fd = new FormData(form), g = k => String(fd.get(k) || '').trim();
+    return [
+      'Tienda: ' + (g('tienda') || '[sin cuenta]'),
+      'Marca: ' + g('marca'), 'Producto: ' + g('producto') + ' ' + g('tam'),
+      'Precio de lista: $' + (g('lista') || '[sin dato]') + ' · Precio oferta: $' + (g('oferta') || '[sin dato]') + ' · Combo x2: $' + (g('combo') || '[sin dato]'),
+      'Rinde: ' + (g('usos') || '[sin dato]') + ' usos por envase',
+      'Público: ' + g('publico'), 'Beneficios: ' + g('beneficios'), 'Tono: ' + g('tono'),
+      'Promo vigente: ' + (g('fin') ? 'termina ' + g('fin') + (g('cupo') ? ', cupo de ' + g('cupo') + ' pedidos' : '') : 'NINGUNA')
+    ].join('\n');
+  }
+  const SCHEMA = `{"enfoque":"precio|calidad|urgencia","angulo":"nombre corto","extra":"precio|checks|reloj|stock|ninguno","etiqueta":"máx 3 palabras","titular":"máx 8 palabras","bajada":"máx 14 palabras o vacío","cta_imagen":"máx 3 palabras","texto_principal":"máx 125 caracteres","titulo_meta":"máx 40 caracteres","boton_meta":"Comprar|Más información|Pedir ahora|Enviar mensaje de WhatsApp","hipotesis":"1 frase","colores":{"fondo":"#RRGGBB","texto":"#RRGGBB","acento":"#RRGGBB"},"decoracion":"espiral|circulos|ondas|destellos","prompt_imagen":"prompt en inglés"}`;
+  const RULES = `Sos redactor publicitario y diseñador de una tienda online uruguaya. Escribís en español rioplatense con voseo ("comprá", "vos", "tenés"), natural y sin clichés.
+Reglas:
+- No inventes precios, descuentos, testimonios, reseñas, cifras ni datos que no estén en el brief. Si falta un dato, ponelo entre corchetes.
+- Las piezas de urgencia usan solo la promo vigente del brief. Si es NINGUNA, urgencia suave sin fechas ni cupos inventados.
+- "extra": precio (precio tachado y oferta), checks (beneficios), reloj (fecha de fin, solo si hay promo), stock (barra de stock) o ninguno.
+- Colores: una paleta distinta y atractiva por anuncio, con buen contraste entre fondo y texto.
+- "prompt_imagen": prompt en inglés para generar una foto publicitaria realista y luminosa de una mujer ficticia (no una persona real ni famosa) con pelo rizado bien definido, en una escena acorde al ángulo del anuncio (baño, tocador, calle de Montevideo, con amigas, playa, etc.). Variá en cada anuncio la edad (18 a 45), el tipo de rulo, el tono de piel y la escena. Sin texto, sin logos, sin marcas. Terminá con "vertical photo, natural light, no text".`;
+  function normalize(o, tanda, idx){
+    o = o || {};
+    const enfoque = ENF[String(o.enfoque || '').toLowerCase()] || 'calidad';
+    let kind = EXTRA_MAP[String(o.extra || '').toLowerCase()] || 'none';
+    if (kind === 'deadline' && !String(new FormData(form).get('fin') || '').trim()) kind = 'none';
+    const t = v => String(v == null ? '' : v).trim();
+    const ad = {
+      uid: tanda + '-' + idx + '-' + Math.random().toString(36).slice(2,7), tanda, source:'ia',
+      id: enfoque[0].toUpperCase() + (idx + 1), enfoque, nombre: t(o.angulo) || 'Variante', kind,
+      tag: t(o.etiqueta) || enfoque, h: t(o.titular) || '[titular]', s: t(o.bajada), cta: t(o.cta_imagen) || 'Comprar',
+      primary: t(o.texto_principal), title: t(o.titulo_meta), button: BOTONES.includes(t(o.boton_meta)) ? t(o.boton_meta) : 'Comprar',
+      hip: t(o.hipotesis), colores: o.colores, deco: DECOS.includes(o.decoracion) ? o.decoracion : DECOS[idx % 4],
+      prompt: t(o.prompt_imagen) || tplPrompt(tanda * 10 + idx), seed: Math.floor(Math.random() * 1e9)
+    };
+    if (!aiPalette(ad.colores)) ad.palIdx = (tanda + idx) % PAL.length;
+    return ad;
+  }
+  function parseJSON(text){
+    const tries = [text, (text.match(/```(?:json)?\s*([\s\S]*?)```/) || [])[1]];
+    const a = text.indexOf('['), b = text.lastIndexOf(']'), c = text.indexOf('{'), d2 = text.lastIndexOf('}');
+    if (a >= 0 && b > a) tries.push(text.slice(a, b + 1));
+    if (c >= 0 && d2 > c) tries.push(text.slice(c, d2 + 1));
+    for (const t of tries){ if (!t) continue; try { return JSON.parse(t); } catch {} }
+    throw {code:'invalid_json'};
+  }
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function aiText(prompt, signal){
+    const k = key(), body = JSON.stringify({model:'openai', messages:[{role:'user', content: prompt}], seed: Math.floor(Math.random() * 1e9)});
+    const url = k ? 'https://gen.pollinations.ai/v1/chat/completions?key=' + encodeURIComponent(k) : 'https://text.pollinations.ai/openai';
+    let res;
+    try { res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body, signal}); }
+    catch (e) { if (signal && signal.aborted) throw {code:'cancelled'}; res = null; }
+    if (res && (res.status === 402 || res.status === 429)) throw {code:'limite', wait: Number(res.headers.get('Retry-After')) || 20};
+    if (!res || !res.ok){
+      if (k) throw {code:'red'};
+      // Respaldo: endpoint simple por GET
+      try { res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt) + '?model=openai&seed=' + Math.floor(Math.random() * 1e9), {signal}); }
+      catch (e) { if (signal && signal.aborted) throw {code:'cancelled'}; throw {code:'red'}; }
+      if (res.status === 402 || res.status === 429) throw {code:'limite', wait: Number(res.headers.get('Retry-After')) || 20};
+      if (!res.ok) throw {code:'red'};
+    }
+    const raw = await res.text();
+    let txt = raw;
+    try { const j = JSON.parse(raw); if (j && j.choices && j.choices[0]) txt = j.choices[0].message.content || ''; } catch {}
+    return parseJSON(txt);
+  }
+  function status(msg, kind){
+    const el = $('#status'); if (!msg){ el.hidden = true; return; }
+    el.hidden = false; el.className = 'status' + (kind === 'err' ? ' err' : '');
+    el.innerHTML = (kind === 'busy' ? '<span class="dot" aria-hidden="true"></span>' : '') + '<span></span>'; el.lastChild.textContent = msg;
+  }
+  const errMsg = e => e && e.code === 'limite' ? `Se alcanzó el límite gratis de la IA. Esperá unos ${e.wait || 20} segundos y probá de nuevo.`
+    : e && e.code === 'invalid_json' ? 'La IA respondió en un formato raro. Tocá "Generar" de nuevo.'
+    : 'No se pudo conectar con la IA gratis. Revisá tu conexión y probá de nuevo.';
+
+  async function generar(){
+    if (busy) return;
+    const tanda = tandas + 1;
+    const prev = ads.slice(0, 60).map(a => '- ' + a.h).join('\n') || '(ninguno todavía)';
+    const prompt = `${RULES}
+
+BRIEF DEL PRODUCTO:
+${brief()}
+
+Generá exactamente 10 anuncios NUEVOS para Meta Ads: 3 con enfoque precio, 4 con enfoque calidad y 3 con enfoque urgencia (miedo a perderse la oferta). Cada uno con un ángulo distinto; cambiá solo el enfoque, nunca el producto. Tanda ${tanda}: buscá ángulos y titulares diferentes a todos los anteriores.
+
+TITULARES YA USADOS (no los repitas):
+${prev}
+
+Respondé SOLO con un array JSON de 10 objetos con esta forma, sin texto antes ni después:
+${SCHEMA}`;
+    busy = new AbortController(); setBusy(true);
+    status('La IA está escribiendo y diseñando la tanda ' + tanda + '… (puede tardar hasta un minuto)', 'busy');
+    try {
+      const out = await aiText(prompt, busy.signal);
+      const arr = Array.isArray(out) ? out : (out && (out.anuncios || out.ads || out.data)) || null;
+      if (!Array.isArray(arr) || !arr.length) throw {code:'invalid_json'};
+      const order = {precio:0, calidad:1, urgencia:2};
+      const nuevos = arr.slice(0, 10).map((o, i) => normalize(o, tanda, i)).sort((a, b) => order[a.enfoque] - order[b.enfoque]);
+      const cnt = {precio:0, calidad:0, urgencia:0};
+      nuevos.forEach(a => { cnt[a.enfoque]++; a.id = a.enfoque[0].toUpperCase() + cnt[a.enfoque]; a.orig = snap(a); });
+      tandas = tanda; ads = nuevos.concat(ads);
+      status('Tanda ' + tanda + ' lista: la IA escribió 10 anuncios. Ahora genera las fotos de a una.');
+      render(); persist(); nuevos.forEach(queueImage);
+    } catch (e) {
+      if (e && e.code === 'cancelled') status('Generación detenida.');
+      else if (e && e.code === 'limite') status(errMsg(e), 'err');
+      else {
+        status(errMsg(e) + ' Mientras tanto armé la tanda con plantillas (las fotos sí son con IA).', 'err');
+        templateBatch(tanda);
+      }
+    } finally { busy = null; setBusy(false); }
+  }
+
+  async function regenerar(a){
+    if (busy){ toast('Esperá a que termine la generación'); return; }
+    const prev = ads.slice(0, 60).map(x => '- ' + x.h).join('\n');
+    const prompt = `${RULES}
+
+BRIEF DEL PRODUCTO:
+${brief()}
+
+Escribí UN anuncio nuevo para Meta Ads con enfoque ${a.enfoque}, con un ángulo distinto a "${a.nombre}". No repitas estos titulares:
+${prev}
+
+Respondé SOLO con un objeto JSON con esta forma:
+${SCHEMA}`;
+    busy = new AbortController(); setBusy(true); toast('La IA está escribiendo otro texto para ' + a.id + '…');
+    try {
+      const o = await aiText(prompt, busy.signal);
+      const n = normalize(Array.isArray(o) ? o[0] : o, a.tanda, 0);
+      Object.assign(a, {nombre:n.nombre, kind:n.kind, tag:n.tag, h:n.h, s:n.s, cta:n.cta, primary:n.primary, title:n.title, button:n.button, hip:n.hip, colores:n.colores, deco:n.deco, palIdx:n.palIdx, edited:false});
+      a.orig = snap(a); render(); persist(); toast(a.id + ': texto nuevo listo');
+    } catch (e) { if (!e || e.code !== 'cancelled') toast(errMsg(e)); }
+    finally { busy = null; setBusy(false); }
+  }
+
+  // Cola de fotos: de a una, respetando el límite gratis
+  const queue = []; let qRunning = false;
+  function imgSize(){ const H = FORMATOS[formato], w = Math.floor(Math.sqrt(580000 * 500 / H) / 8) * 8; return {w, h: Math.round(w * H / 500 / 8) * 8}; }
+  function imageURL(a){
+    const {w, h} = imgSize(), enc = encodeURIComponent(a.prompt), k = key();
+    const q = `width=${w}&height=${h}&seed=${a.seed}&model=flux&nologo=true`;
+    return k ? `https://gen.pollinations.ai/image/${enc}?${q}&key=${encodeURIComponent(k)}` : `https://image.pollinations.ai/prompt/${enc}?${q}`;
+  }
+  function queueImage(a){ if (!a.prompt) return; a.imgState = 'cola'; delete a.img; a.imgEl = null; if (!queue.includes(a)) queue.push(a); redrawCard(a); runQueue(); }
+  async function runQueue(){
+    if (qRunning) return; qRunning = true;
+    while (queue.length){
+      const a = queue.shift(); if (!ads.includes(a)) continue;
+      a.imgState = 'cargando'; redrawCard(a); fotoStatus();
+      let ok = false;
+      for (let intento = 0; intento < 5 && !ok; intento++){
+        try {
+          const res = await fetch(imageURL(a));
+          if (res.status === 402 || res.status === 429){ const w = Number(res.headers.get('Retry-After')) || 15; fotoStatus(`Límite gratis: esperando ${w} s para la próxima foto…`); await sleep(w * 1000); continue; }
+          if (!res.ok) throw new Error('http ' + res.status);
+          const blob = await res.blob(); if (!/^image\//.test(blob.type)) throw new Error('no image');
+          a.img = await shrink(blob); a.imgState = 'ok'; a.imgEl = null; ok = true;
+        } catch (e) { await sleep(4000); }
+      }
+      if (!ok) a.imgState = 'error';
+      redrawCard(a); persist(); fotoStatus();
+      await sleep(key() ? 800 : 3000);
+    }
+    qRunning = false; fotoStatus();
+  }
+  function fotoStatus(extra){
+    const total = ads.filter(a => a.imgState === 'cola' || a.imgState === 'cargando').length;
+    if (extra){ status(extra, 'busy'); return; }
+    if (total) status(`Generando fotos con IA… faltan ${total}. Podés seguir editando mientras tanto.`, 'busy');
+    else if (!busy && $('#status').textContent.startsWith('Generando fotos')) { status('Fotos listas.'); setTimeout(() => status(''), 3000); }
+  }
+  function redrawCard(a){
+    const card = grid.querySelector(`[data-uid="${a.uid}"]`); if (!card) return;
+    const cv = card.querySelector('canvas'); imgFor(a, () => { prep(a); draw(cv, a); }); prep(a); draw(cv, a);
+    const st = card.querySelector('[data-imgst]'); if (st) st.textContent = ({cola:'en cola', cargando:'generando…', ok:'lista', error:'no se pudo generar'})[a.imgState] || (a.img ? 'propia' : 'sin foto');
+  }
+  const snap = a => JSON.stringify(Object.assign({}, a, {orig: undefined, d: undefined, pal: undefined, imgEl: undefined, img: undefined, imgState: undefined}));
+
+  function templateBatch(tanda){
+    const d = data(), t = tanda - 1;
+    const nuevos = SLOTS.map((s, i) => {
+      const v = s.v[(t + i) % s.v.length](d);
+      const ad = Object.assign({uid: tanda + '-' + i + '-tpl-' + Math.random().toString(36).slice(2,6), tanda, source:'plantilla', id:s.id, enfoque:s.enfoque, nombre:s.nombre, kind:s.kind, hip:s.hip, palIdx:(i + t) % PAL.length, deco:DECOS[(i + t) % 4], prompt: tplPrompt(i + t), seed: Math.floor(Math.random() * 1e9)}, v);
+      ad.orig = snap(ad); return ad;
+    });
+    tandas = tanda; ads = nuevos.concat(ads); render(); persist(); nuevos.forEach(queueImage);
+  }
+  function tplPrompt(k){
+    const edad = ['22-year-old','28-year-old','35-year-old','41-year-old'][k % 4], rulo = ['tight coily','bouncy 3A','voluminous 3C','soft wavy 2C'][k % 4];
+    const piel = ['olive skin','deep brown skin','fair freckled skin','warm tan skin'][(k + 1) % 4], esc = ['in a bright bathroom touching her curls','smiling at a vanity mirror','walking on a sunny Montevideo street','laughing with friends at a cafe'][(k + 2) % 4];
+    return `Realistic advertising photo of a fictional ${edad} woman with defined ${rulo} curly hair and ${piel}, ${esc}, soft natural light, warm tones, no text, no logos, vertical photo, natural light, no text`;
+  }
+  function setBusy(on){ $('#btnGen').disabled = on; $('#btnGen').textContent = on ? 'Generando…' : (ads.length ? 'Generar 10 anuncios más' : 'Generar 10 anuncios con IA'); $('#btnStop').hidden = !on; }
+
+  // ---------- UI ----------
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const FIELDS = [['prompt','Descripción de la foto (en inglés, para la IA)','textarea'],['tag','Etiqueta','input'],['h','Titular de la imagen','textarea'],['s','Bajada','textarea'],['cta','Texto del botón en la imagen','input'],['primary','Texto principal (Meta)','textarea'],['title','Título (Meta)','input'],['button','Botón de Meta','input']];
+  function prep(a){ a.d = data(); a.pal = palOf(a); return a; }
+  const IMGS = {};
+  function imgFor(a, cb){
+    if (!a.img){ a.imgEl = null; return; }
+    let e = IMGS[a.img];
+    if (e && e.im.complete && e.im.naturalWidth){ a.imgEl = e.im; return; }
+    if (!e){ e = IMGS[a.img] = {im: new Image(), cbs: []}; e.im.onload = () => { const l = e.cbs; e.cbs = []; l.forEach(f => f(e.im)); }; e.im.src = a.img; }
+    e.cbs.push(im => { a.imgEl = im; cb(); });
+  }
+  function shrink(file){
+    return new Promise(res => { const u = URL.createObjectURL(file), im = new Image(); im.onload = () => {
+      const k = Math.min(1, 1080 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', 0.82)); }; im.src = u; });
+  }
+  function fillMeta(card, a){
+    card.querySelector('[data-k=primary]').textContent = a.primary;
+    card.querySelector('[data-k=title]').textContent = a.title;
+    card.querySelector('[data-k=button]').textContent = a.button;
+    card.querySelector('.edited').hidden = !a.edited;
+  }
+  function render(){
+    grid.innerHTML = '';
+    $('#empty').hidden = ads.length > 0;
+    $('#contador').textContent = ads.length + ' anuncios · ' + tandas + (tandas === 1 ? ' tanda' : ' tandas');
+    const H = FORMATOS[formato];
+    let lastT = null;
+    ads.filter(a => filtro === 'todos' || a.enfoque === filtro).forEach(a => {
+      if (a.tanda !== lastT){
+        lastT = a.tanda; const h = document.createElement('div'); h.className = 'tanda-h';
+        h.innerHTML = `Tanda ${a.tanda} <span class="src ${a.source === 'ia' ? '' : 'tpl'}">${a.source === 'ia' ? 'generada con IA' : 'plantillas'}</span>`;
+        grid.appendChild(h);
+      }
+      prep(a);
+      const card = document.createElement('article'); card.className = 'card'; card.dataset.uid = a.uid;
+      const fields = FIELDS.map(([k, lab, t]) => t === 'textarea'
+        ? `<label>${lab}<textarea data-e="${k}" rows="2">${esc(a[k] || '')}</textarea></label>`
+        : `<label>${lab}<input data-e="${k}" value="${esc(a[k] || '')}"></label>`).join('');
+      const opts = [{n:'IA', p: aiPalette(a.colores)}].concat(PAL.map((pl, i) => ({n:'Paleta ' + (i + 1), p:pl, i}))).filter(o => o.p);
+      const sw = opts.map(o => `<button type="button" class="sw" data-pal="${o.i == null ? 'ia' : o.i}" aria-label="${o.n}" aria-pressed="${o.i == null ? a.palIdx == null : a.palIdx === o.i}" style="background:${o.p.bg};box-shadow:inset 0 0 0 6px ${o.p.tagBg}"></button>`).join('');
+      card.innerHTML = `<canvas width="1080" height="${H}" role="img" aria-label="Anuncio ${esc(a.id)}: ${esc(a.h)}" style="aspect-ratio:1080/${H}"></canvas>
+        <div class="meta">
+          <div class="id"><span>${esc(a.id)} · ${esc(a.nombre)} <span class="edited" hidden>· editado</span></span><span class="pill p-${a.enfoque}">${a.enfoque}</span></div>
+          <dl><dt>Texto principal</dt><dd data-k="primary"></dd><dt>Título</dt><dd data-k="title"></dd><dt>Botón de Meta</dt><dd data-k="button"></dd><dt>Qué prueba</dt><dd>${esc(a.hip)}</dd></dl>
+          <div class="imgbox"><span class="lab">Foto: <span data-imgst></span></span><div class="actions"><button class="ghost" type="button" data-newimg>Otra foto con IA</button><label class="ghost upl">Subir mi foto<input type="file" accept="image/*" data-img hidden></label></div></div>
+          <details class="edit"><summary>Editar este anuncio</summary>
+            <div class="editbox">${fields}
+              <div><span class="lab">Colores</span><div class="sws">${sw}</div></div>
+              <label>Decoración<select data-deco>${DECOS.map(x => `<option ${x === a.deco ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+              <button type="button" class="ghost" data-reset>Volver al original</button>
+            </div>
+          </details>
+          <div class="actions"><button class="primary" type="button" data-regen>Otro texto con IA</button><button class="dark" type="button" data-copy>Copiar textos</button><button class="ghost" type="button" data-png>Descargar PNG</button></div>
+        </div>`;
+      const cv = card.querySelector('canvas');
+      const redraw = () => { prep(a); draw(cv, a); fillMeta(card, a); persist(); };
+      imgFor(a, () => { prep(a); draw(cv, a); });
+      draw(cv, a); fillMeta(card, a);
+      card.querySelector('[data-imgst]').textContent = ({cola:'en cola', cargando:'generando…', ok:'lista', error:'no se pudo generar', propia:'propia'})[a.imgState] || (a.img ? 'lista' : 'sin foto');
+      card.querySelectorAll('[data-e]').forEach(el => el.addEventListener('input', () => { a[el.dataset.e] = el.value; a.edited = true; redraw(); }));
+      card.querySelectorAll('[data-pal]').forEach(b => b.onclick = () => {
+        a.palIdx = b.dataset.pal === 'ia' ? null : Number(b.dataset.pal); a.edited = true;
+        card.querySelectorAll('[data-pal]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); redraw();
+      });
+      card.querySelector('[data-deco]').onchange = e => { a.deco = e.target.value; a.edited = true; redraw(); };
+      card.querySelector('[data-reset]').onclick = () => { const o = JSON.parse(a.orig); const keep = {img:a.img, imgState:a.imgState, imgEl:a.imgEl, orig:a.orig}; Object.keys(a).forEach(k => delete a[k]); Object.assign(a, o, keep); render(); persist(); toast(a.id + ' volvió al original'); };
+      card.querySelector('[data-regen]').onclick = () => regenerar(a);
+      card.querySelector('[data-newimg]').onclick = () => { a.seed = Math.floor(Math.random() * 1e9); queueImage(a); toast('Pidiendo otra foto para ' + a.id); };
+      card.querySelector('[data-copy]').onclick = () => copy(`Texto principal: ${a.primary}\nTítulo: ${a.title}\nBotón: ${a.button}`);
+      const ui = card.querySelector('[data-img]'); if (ui) ui.onchange = e => { const f = e.target.files && e.target.files[0]; if (f) shrink(f).then(url => { a.img = url; a.imgEl = null; a.imgState = 'propia'; redrawCard(a); persist(); toast('Foto agregada a ' + a.id); }); };
+      card.querySelector('[data-png]').onclick = () => cv.toBlob(b => save(`ad-t${a.tanda}-${a.id}-${formato.replace(':','x')}.png`, b), 'image/png');
+      grid.appendChild(card);
+    });
+    if (!busy) setBusy(false);
+  }
+  function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2400); }
+  async function copy(text, msg){
+    try { await navigator.clipboard.writeText(text); toast(msg || 'Textos copiados'); }
+    catch { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Textos copiados'); } catch { toast('No se pudo copiar'); } ta.remove(); }
+  }
+  let dl = null;
+  async function save(filename, blobData){
+    try {
+      if (window.claude && window.claude.use){ dl = dl || await window.claude.use('downloads'); }
+      if (dl){ await dl.save({filename, data: blobData}); toast('Archivo guardado'); return; }
+    } catch (e) { if (e && e.code === 'declined') return; if (e && e.code === 'rate_limited'){ toast('Esperá un momento y probá de nuevo'); return; } }
+    const url = URL.createObjectURL(blobData instanceof Blob ? blobData : new Blob([blobData])); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  function csv(){
+    if (!ads.length){ toast('Todavía no hay anuncios'); return; }
+    const q = v => '"' + String(v == null ? '' : v).replace(/ /g,' ').replace(/"/g,'""') + '"';
+    const rows = [['Tanda','Anuncio','Enfoque','Ángulo','Texto principal','Título','Botón','Hipótesis','Origen']].concat(ads.map(a => [a.tanda, a.id, a.enfoque, a.nombre, a.primary, a.title, a.button, a.hip, a.source]));
+    save(`ads-${ads.length}-anuncios.csv`, '﻿' + rows.map(r => r.map(q).join(',')).join('\n'));
+  }
+
+  // ---------- Guardado ----------
+  const KEY = 'generador-ads-ia-v3';
+  function persist(){
+    try {
+      const vals = {}; new FormData(form).forEach((v, k) => { if (typeof v === 'string') vals[k] = v; });
+      const imgs = {};
+      const slim = ads.map(a => { const o = Object.assign({}, a); delete o.d; delete o.pal; delete o.imgEl; if (o.img){ const k = 'i' + o.img.length + o.img.slice(-24); imgs[k] = o.img; o.img = '@' + k; } return o; });
+      try { localStorage.setItem('ads-pkey', key()); } catch {}
+      try { localStorage.setItem(KEY, JSON.stringify({vals, formato, ads: slim, tandas, imgs})); }
+      catch { slim.forEach(o => { if (o.img) delete o.img; }); localStorage.setItem(KEY, JSON.stringify({vals, formato, ads: slim, tandas, imgs:{}})); if (!persist.warned){ persist.warned = true; toast('Las fotos no entran en la memoria del navegador: se guardan los textos'); } }
+    } catch {}
+  }
+  function restore(){
+    try {
+      const st = JSON.parse(localStorage.getItem(KEY) || 'null'); if (!st) return;
+      Object.entries(st.vals || {}).forEach(([k, v]) => { const el = form.elements[k]; if (el && el.type !== 'file') el.value = v; });
+      formato = FORMATOS[st.formato] ? st.formato : '1:1'; ads = Array.isArray(st.ads) ? st.ads : []; ads.forEach(o => { if (typeof o.img === 'string' && o.img[0] === '@'){ const u = (st.imgs || {})[o.img.slice(1)]; if (u) o.img = u; else delete o.img; } }); tandas = st.tandas || 0;
+    } catch {}
+  }
+  function loadImg(file, cb){ const url = URL.createObjectURL(file), img = new Image(); img.onload = () => cb(img, url); img.src = url; }
+
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { filtro = b.dataset.f; document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b))); render(); });
+  const fmtSel = $('#formato'); fmtSel.onchange = () => { formato = fmtSel.value; render(); persist(); };
+  $('#btnGen').onclick = generar;
+  $('#btnStop').onclick = () => busy && busy.abort();
+  $('#btnCsv2').onclick = csv;
+  $('#btnReset').onclick = () => { try { localStorage.removeItem(KEY); } catch {} location.reload(); };
+  let tmr; form.addEventListener('input', e => { if (e.target.type === 'file') return; clearTimeout(tmr); tmr = setTimeout(() => { render(); persist(); }, 300); });
+  form.addEventListener('submit', e => e.preventDefault());
+  form.foto.addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadImg(f, (img, url) => { photo = img; const t = $('#thumb'); t.src = url; t.hidden = false; render(); }); });
+  form.logo.addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadImg(f, (img, url) => { logo = img; const t = $('#thumbLogo'); t.src = url; t.hidden = false; render(); }); });
+
+  try { $('#pkey').value = localStorage.getItem('ads-pkey') || ''; } catch {}
+  $('#pkey').addEventListener('change', persist);
+  restore(); fmtSel.value = formato; render();
+  ads.filter(a => a.imgState === 'cola' || a.imgState === 'cargando').forEach(queueImage);
+  if (document.fonts){ Promise.all([document.fonts.load(`800 40px 'Bricolage Grotesque'`), document.fonts.load(`600 20px Inter`), document.fonts.load(`700 20px Inter`)]).then(() => render()).catch(() => {}); }
+  if (window.claude && window.claude.use){ window.claude.use('downloads').then(x => { dl = x; }).catch(() => {}); }
+})();
+</script>
+</body>
+</html>
